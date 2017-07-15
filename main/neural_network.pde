@@ -78,6 +78,12 @@ class NeuralNetwork
   
   void getResults(double[] resultValues)
   {
-  
+    Layer outputLayer = layers[layers.length - 1];
+    resultValues = new double[outputLayer.neurons.length - 1]; // Minus the bias
+    
+    for(int i = 0; i < outputLayer.neurons.length; i++)
+    {
+      resultValues[i] = outputLayer.neurons[i].getOutputValue();
+    }
   }
 }
