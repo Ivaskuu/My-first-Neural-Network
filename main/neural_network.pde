@@ -1,6 +1,7 @@
 class NeuralNetwork
 {
   Layer[] layers;
+  double overallError;
   
   NeuralNetwork(int[] topology)
   {
@@ -37,7 +38,42 @@ class NeuralNetwork
   
   void backProp(final double[] targetValues)
   {
-  
+    // Calculate the overall neural network error (rooted mean square of the outputs neurons values, so a larger error is a lot worse)
+    Layer outputLayer = layers[layers.length - 1];
+    overallError = 0;
+    
+    for(int i = 0; i < outputLayer.neurons.length - 1; i++) // Not including the bias
+    {
+      double delta = targetValues[i] - outputLayer.neurons[i].getOutputValue();
+      overallError += delta * delta;
+    }
+    
+    overallError /= outputLayer.neurons.length - 1; // Get average error squared
+    overallError = Math.sqrt(overallError);
+    
+    // Calculate output layer gradients
+    for(int i = 0; i < outputLayer.neurons.length - 1; i++) // Not including the bias
+    {
+      outputLayer.neurons[i].calcOutputGradients(targetValues[i]);
+    }
+    
+    // Calculate gradients on hidden layers
+    for(int i = layers.length - 2; i > 0; i--) // Loop through each hidden layer
+    {
+      for(int j = 0; j < layers[i].neurons.length - 1; j++) // Loop through each neuron of the hidden layer
+      {
+        layers[i].neurons[j].calcHiddenGradients(layers[i+1]);
+      }
+    }
+    
+    // Update connection weights
+    for(int i = layers.length - 1; i > 0; i--)
+    {
+      for(int j = 0; j < layers[i].neurons.length; i++)
+      {
+        layers[i].neurons[j].updateInputWeights(layers[i-1]);
+      }
+    }
   }
   
   void getResults(double[] resultValues)
